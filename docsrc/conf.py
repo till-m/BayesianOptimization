@@ -119,7 +119,7 @@ html_theme_options = {
     ],
     # BEGIN: version_dropdown
     "version_dropdown": True,
-    "version_json": 'versions.json',
+    "version_json": '../versions.json',
     # END: version_dropdown
     "toc_title_is_page_title": True,
     # BEGIN: social icons
