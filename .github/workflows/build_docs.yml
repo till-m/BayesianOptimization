@@ -51,7 +51,7 @@ jobs:
             set_output('target', target)
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/master' }} && steps.docs-publish-dir.outputs.target != ''
+        if: steps.docs-publish-dir.outputs.target != ''
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/html
