@@ -91,7 +91,8 @@ class BayesianOptimization(Observable):
         Dictionary with parameters names as keys and a tuple with minimum
         and maximum values.
 
-    constraint: A ConstraintModel. Note that the names of arguments of the
+    constraint: ConstraintModel
+        Note that the names of arguments of the
         constraint function and of f need to be the same.
 
     random_state: int or numpy.random.RandomState, optional(default=None)
@@ -110,19 +111,6 @@ class BayesianOptimization(Observable):
         This behavior may be desired in high noise situations where repeatedly probing
         the same point will give different answers. In other situations, the acquisition
         may occasionally generate a duplicate point.
-
-    Methods
-    -------
-    probe()
-        Evaluates the function on the given points.
-        Can be used to guide the optimizer.
-
-    maximize()
-        Tries to find the parameters that yield the maximum value for the
-        given function.
-
-    set_bounds()
-        Allows changing the lower and upper searching bounds
     """
 
     def __init__(self,
