@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 from warnings import warn
 
 import numpy as np
@@ -13,19 +13,16 @@ from bayes_opt.parameter import BayesParameter, CategoricalParameter, FloatParam
 from bayes_opt.util import ensure_rng
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping, Sequence
+    from collections.abc import Callable, Mapping
 
     from numpy.random import RandomState
     from numpy.typing import NDArray
 
     from bayes_opt.constraint import ConstraintModel
-    from bayes_opt.parameter import BoundsMapping
+    from bayes_opt.parameter import BoundsMapping, ParamsType
 
     Float = np.floating[Any]
     Int = np.integer[Any]
-    ParamsType = Union[
-        Mapping[str, Union[float, NDArray[Float]]], Sequence[Union[float, NDArray[Float]]], NDArray[Float]
-    ]
 
 
 def _hashable(x: NDArray[Float]) -> tuple[float, ...]:

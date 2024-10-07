@@ -29,6 +29,10 @@ if TYPE_CHECKING:
     Bounds = Union[FloatBounds, IntBounds, CategoricalBounds]
     BoundsMapping = Mapping[str, Bounds]
 
+    # FIXME: categorical parameters can be of any type.
+    # This will make static type checking for parameters difficult.
+    ParamsType = Union[Mapping[str, Any], Sequence[Any], NDArray[Float]]
+
 
 def is_numeric(value: Any) -> bool:
     """Check if a value is numeric."""

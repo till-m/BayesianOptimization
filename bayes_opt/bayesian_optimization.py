@@ -7,7 +7,7 @@ function over a specific target space.
 from __future__ import annotations
 
 from collections import deque
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
@@ -21,7 +21,7 @@ from bayes_opt.target_space import TargetSpace
 from bayes_opt.util import ensure_rng
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Mapping, Sequence
+    from collections.abc import Callable, Iterable, Mapping
 
     import numpy as np
     from numpy.random import RandomState
@@ -31,12 +31,9 @@ if TYPE_CHECKING:
     from bayes_opt.acquisition import AcquisitionFunction
     from bayes_opt.constraint import ConstraintModel
     from bayes_opt.domain_reduction import DomainTransformer
-    from bayes_opt.parameter import BoundsMapping
+    from bayes_opt.parameter import BoundsMapping, ParamsType
 
     Float = np.floating[Any]
-    ParamsType = Union[
-        Mapping[str, Union[float, NDArray[Float]]], Sequence[Union[float, NDArray[Float]]], NDArray[Float]
-    ]
 
 
 class Observable:
