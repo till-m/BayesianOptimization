@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 from warnings import warn
 
 import numpy as np
@@ -23,6 +23,9 @@ if TYPE_CHECKING:
 
     Float = np.floating[Any]
     Int = np.integer[Any]
+    ParamsType = Union[
+        Mapping[str, Union[float, NDArray[Float]]], Sequence[Union[float, NDArray[Float]]], NDArray[Float]
+    ]
 
 
 def _hashable(x: NDArray[Float]) -> tuple[float, ...]:
@@ -270,7 +273,7 @@ class TargetSpace:
             bounds[self.masks[key]] = self._params_config[key].bounds
         return bounds
 
-    def params_to_array(self, params: Mapping[str, float]) -> NDArray[Float]:
+    def params_to_array(self, params: Mapping[str, float | NDArray[Float]]) -> NDArray[Float]:
         """Convert a dict representation of parameters into an array version.
 
         Parameters
@@ -335,7 +338,7 @@ class TargetSpace:
             raise ValueError(error_msg)
         return self._to_params(x)
 
-    def _to_float(self, value: Mapping[str, float]) -> NDArray[Float]:
+    def _to_float(self, value: Mapping[str, float | NDArray[Float]]) -> NDArray[Float]:
         if set(value) != set(self.keys):
             msg = (
                 f"Parameters' keys ({sorted(value)}) do " f"not match the expected set of keys ({self.keys})."
@@ -396,10 +399,7 @@ class TargetSpace:
         return x
 
     def register(
-        self,
-        params: Mapping[str, float] | Sequence[float] | NDArray[Float],
-        target: float,
-        constraint_value: float | NDArray[Float] | None = None,
+        self, params: ParamsType, target: float, constraint_value: float | NDArray[Float] | None = None
     ) -> None:
         """Append a point and its target value to the known data.
 
@@ -494,9 +494,7 @@ class TargetSpace:
         self._target = target_copy
         self._cache = cache_copy
 
-    def probe(
-        self, params: Mapping[str, float] | Sequence[float] | NDArray[Float]
-    ) -> float | tuple[float, float | NDArray[Float]]:
+    def probe(self, params: ParamsType) -> float | tuple[float, float | NDArray[Float]]:
         """Evaluate the target function on a point and register the result.
 
         Notes
