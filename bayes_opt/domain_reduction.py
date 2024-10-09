@@ -62,11 +62,14 @@ class SequentialDomainReductionTransformer(DomainTransformer):
 
     def __init__(
         self,
+        parameters: Iterable[str] | None = None,
         gamma_osc: float = 0.7,
         gamma_pan: float = 1.0,
         eta: float = 0.9,
         minimum_window: NDArray[Float] | Sequence[float] | Mapping[str, float] | float = 0.0,
     ) -> None:
+        # TODO: Ensure that this is only applied to continuous parameters
+        self.parameters = parameters
         self.gamma_osc = gamma_osc
         self.gamma_pan = gamma_pan
         self.eta = eta
