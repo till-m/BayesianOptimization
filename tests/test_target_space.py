@@ -50,25 +50,23 @@ def test_array_to_params():
         space.array_to_params(np.array([2, 3, 5]))
 
 
-def test_as_array():
+def test_to_float():
     space = TargetSpace(target_func, PBOUNDS)
 
-    x = space._as_array([0, 1])
+    x = space._to_float({"p2": 0, "p1": 1})
     assert x.shape == (2,)
-    assert all(x == np.array([0, 1]))
-
-    x = space._as_array({"p2": 1, "p1": 2})
-    assert x.shape == (2,)
-    assert all(x == np.array([2, 1]))
+    assert all(x == np.array([1, 0]))
 
     with pytest.raises(ValueError):
-        x = space._as_array([2, 1, 7])
+        x = space._to_float([0, 1])
     with pytest.raises(ValueError):
-        x = space._as_array({"p2": 1, "p1": 2, "other": 7})
+        x = space._to_float([2, 1, 7])
     with pytest.raises(ValueError):
-        x = space._as_array({"p2": 1})
+        x = space._to_float({"p2": 1, "p1": 2, "other": 7})
     with pytest.raises(ValueError):
-        x = space._as_array({"other": 7})
+        x = space._to_float({"p2": 1})
+    with pytest.raises(ValueError):
+        x = space._to_float({"other": 7})
 
 
 def test_register():
@@ -95,8 +93,7 @@ def test_register():
 
 
 def test_register_with_constraint():
-    PBOUNDS = {"p1": (0, 10), "p2": (1, 100)}
-    constraint = ConstraintModel(lambda x: x, -2, 2)
+    constraint = ConstraintModel(lambda x: x, -2, 2, transform=lambda x: x)
     space = TargetSpace(target_func, PBOUNDS, constraint=constraint)
 
     assert len(space) == 0
@@ -108,14 +105,14 @@ def test_register_with_constraint():
     assert all(space.constraint_values == np.array([0]))
 
     # registering with array
-    space.register(params={"p1": 5, "p2": 4}, target=9, constraint_value=2)
+    space.register(params={"p1": 0.5, "p2": 4}, target=4.5, constraint_value=2)
     assert len(space) == 2
-    assert all(space.params[1] == np.array([5, 4]))
-    assert all(space.target == np.array([3, 9]))
+    assert all(space.params[1] == np.array([0.5, 4]))
+    assert all(space.target == np.array([3, 4.5]))
     assert all(space.constraint_values == np.array([0, 2]))
 
     with pytest.raises(ValueError):
-        space.register(params={"p1": 2, "p2": 2}, target=3)
+        space.register(params={"p1": 0.2, "p2": 2}, target=2.2)
 
 
 def test_register_point_beyond_bounds():
@@ -134,7 +131,7 @@ def test_probe():
     # probing with dict
     space.probe(params={"p1": 1, "p2": 2})
     assert len(space) == 1
-    assert all(space.params[0] == np.array([1, 2]))
+    assert all(space.params[-1] == np.array([1, 2]))
     assert all(space.target == np.array([3]))
 
     # probing with array
@@ -146,7 +143,7 @@ def test_probe():
     # probing same point with dict
     space.probe(params={"p1": 1, "p2": 2})
     assert len(space) == 3
-    assert all(space.params[1] == np.array([5, 4]))
+    assert all(space.params[2] == np.array([1, 2]))
     assert all(space.target == np.array([3, 9, 3]))
 
     # probing same point with array
