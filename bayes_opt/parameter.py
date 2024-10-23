@@ -484,6 +484,7 @@ def wrap_kernel(kernel: kernels.Kernel, transform: Callable[[Any], Any]) -> kern
 
         def __call__(self, X: Any, Y: Any = None, eval_gradient: bool = False) -> Any:
             X = transform(X)
+            Y = transform(Y) if Y is not None else None
             return super().__call__(X, Y, eval_gradient)
 
         def __reduce__(self) -> str | tuple[Any, ...]:
