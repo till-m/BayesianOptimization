@@ -73,6 +73,7 @@ class TargetSpace:
         target_func: Callable[..., float] | None,
         pbounds: BoundsMapping,
         constraint: NonlinearConstraint | None = None,
+        scale_features: bool = True,
         random_state: int | RandomState | None = None,
         allow_duplicate_points: bool | None = False,
     ) -> None:
@@ -88,6 +89,7 @@ class TargetSpace:
         self._params_config = self.make_params(pbounds)
         self._dim = sum([self._params_config[key].dim for key in self._keys])
 
+        self.scale_features = scale_features
         self._masks = self.make_masks()
         self._bounds = self.calculate_bounds()
 
@@ -106,7 +108,7 @@ class TargetSpace:
                 constraint.fun,
                 constraint.lb,
                 constraint.ub,
-                transform=self.kernel_transform,
+                transform=self.transform,
                 random_state=random_state,
             )
 
@@ -336,6 +338,59 @@ class TargetSpace:
             raise AttributeError(error_msg)
 
         return self._constraint_values
+
+    def transform(self, value: NDArray[Float]) -> NDArray[Float]:
+        """Transform floating-point suggestions to parameter values.
+
+        Vectorized.
+        """
+        value = self.kernel_transform(value)
+        if self.scale_features:
+            value = self.scale_transform(value)
+        return value
+
+    def scale_transform(self, value: NDArray[Float]) -> NDArray[Float]:
+        r"""Adjust feature scaling such that uniformly sampled points per parameter have the same distance.
+
+        Consider a parameter space with two parameters, one with bounds (0, 1) and the other with bounds
+        (0, 100). If we sample uniformly from the first parameter, we will get values between 0 and 1, if we
+        sample uniformly from the second parameter, we will get values between 0 and 100. If we want to
+        ensure that the distance between two random points in the first parameter is the same as the distance
+        between two random points in the second parameter, we need to scale the second parameter by its
+        range. This function performs that scaling.
+
+        Consider \\(x_i, x_j\\) sampled uniformly from \\([0, 1]^d\\). The distance
+        between the two points in the parameter space is
+
+        .. math::
+
+            d(x_i, x_j) = \\| x_i - x_j \\|_2
+
+        The expected distance between two points in the parameter space is given by:
+
+        .. math::
+
+            d(x_i, x_j) = \\sqrt{d} \\cdot \\left\\| x_i - x_j \right\\|_2
+
+        where \\(a_i\\) and \\(b_i\\) are the bounds of the \\(i\\)-th parameter.
+
+        Given this, we scale the distance between two points by the formula:
+
+        .. math::
+
+            \tilde{x}_i = \frac{1}{\\sqrt{d}} \\cdot \frac{x_i - a_i}{b_i - a_i}
+
+        where \\(a_i\\) and \\(b_i\\) are the bounds of the \\(i\\)-th parameter.
+
+
+        Notes
+        -----
+        As of now, this function assumes uniform sampling over the space, which is not the case for e.g.
+        discrete or categorical parameters. Presumably the difference is neglible (in any case, it should be
+        an improvement in general over the previous behavior).
+        """
+        value = np.atleast_2d(value)
+        return (value - self._bounds[:, 0]) / (self._bounds[:, 1] - self._bounds[:, 0])
 
     def kernel_transform(self, value: NDArray[Float]) -> NDArray[Float]:
         """Transform floating-point suggestions to values used in the kernel.

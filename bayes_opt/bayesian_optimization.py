@@ -83,6 +83,7 @@ class BayesianOptimization:
         pbounds: Mapping[str, tuple[float, float]],
         acquisition_function: AcquisitionFunction | None = None,
         constraint: NonlinearConstraint | None = None,
+        scale_features: bool = False,
         random_state: int | RandomState | None = None,
         verbose: int = 2,
         bounds_transformer: DomainTransformer | None = None,
@@ -107,6 +108,7 @@ class BayesianOptimization:
             f,
             pbounds,
             constraint=constraint,
+            scale_features=scale_features,
             random_state=random_state,
             allow_duplicate_points=self._allow_duplicate_points,
         )
@@ -117,7 +119,9 @@ class BayesianOptimization:
 
         # Internal GP regressor
         self._gp = GaussianProcessRegressor(
-            kernel=wrap_kernel(Matern(nu=2.5), transform=self._space.kernel_transform),
+            kernel=wrap_kernel(
+                Matern(nu=2.5, length_scale=np.sqrt(len(pbounds))), transform=self._space.transform
+            ),
             alpha=1e-6,
             normalize_y=True,
             n_restarts_optimizer=5,
@@ -337,7 +341,7 @@ class BayesianOptimization:
     def set_gp_params(self, **params: Any) -> None:
         """Set parameters of the internal Gaussian Process Regressor."""
         if "kernel" in params:
-            params["kernel"] = wrap_kernel(kernel=params["kernel"], transform=self._space.kernel_transform)
+            params["kernel"] = wrap_kernel(kernel=params["kernel"], transform=self._space.transform)
         self._gp.set_params(**params)
 
     def save_state(self, path: str | PathLike[str]) -> None:
